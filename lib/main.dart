@@ -1,64 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:telegram_selfmade_flutter_client/core/services/tdlib_service.dart';
+import 'package:telegram_selfmade_flutter_client/features/auth/presentation/pages/auth_phone.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'core/providers/talker_provider.dart';
+import 'core/providers/tdlib_providers.dart';
+
+void main() async {
+  final talker = TalkerFlutter.init(settings: TalkerSettings());
+
+  runTalkerZonedGuarded(
+    talker,
+    () => runApp(ProviderScope(child: const TelegramClient())),
+    (error, stackTrace) {
+      talker.error('Uncaught error', error, stackTrace);
+    },
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TelegramClient extends ConsumerStatefulWidget {
+  const TelegramClient({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+  ConsumerState<TelegramClient> createState() => _TelegramClientState();
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class _TelegramClientState extends ConsumerState<TelegramClient> {
+  bool _isInitialized = false;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  void initState() {
+    super.initState();
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+    final tdClient = ref.read(tdClientProvider);
+    final _talker = ref.read(talkerProvider);
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+    TdlibService(tdClient, _talker).initialize().then((_) {
+      setState(() {
+        _isInitialized = true;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+    return MaterialApp(
+      home: _isInitialized
+          ? const AuthPhoneScreen()
+          : const CircularProgressIndicator(),
     );
   }
 }
