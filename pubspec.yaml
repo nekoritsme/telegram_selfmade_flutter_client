@@ -38,6 +38,7 @@ dependencies:
   path_provider: ^2.1.5
   talker: ^5.1.0
   talker_riverpod_logger: ^5.1.0
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,6 @@
+import 'package:dartz/dartz.dart';
+
 abstract interface class AuthRepository {
-  Future<void> sendPhoneNumber(String phoneNumber);
-  Future<void> sendAuthCode(String code);
+  Future<Either> sendPhoneNumber(String phoneNumber);
+  Future<Either> sendAuthCode(String code);
 }
