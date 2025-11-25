@@ -48,8 +48,9 @@ class TdlibService {
                 systemVersion: '',
               ),
             );
+          } else {
+            authorizationState = event.authorizationState;
           }
-          authorizationState = event.authorizationState;
           talker.info("Updated authorization state: $authorizationState");
         }
       });
