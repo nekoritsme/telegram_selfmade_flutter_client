@@ -4,9 +4,9 @@ import 'package:tdlib/td_api.dart' as td;
 import 'package:tdlib/td_client.dart';
 
 class TdlibService {
-  TdlibService(this._client, this.talker);
+  TdlibService(this.client, this.talker);
 
-  final Client _client;
+  final Client client;
   final Talker talker;
   bool isInitialized = false;
 
@@ -21,20 +21,20 @@ class TdlibService {
 
     talker.info("Initializing TDLib client...");
     try {
-      await _client.initialize();
+      await client.initialize();
       final appDir = await getApplicationDocumentsDirectory();
       final dbPath = '${appDir.path}/tdlib';
 
-      _client.updates.listen((td.TdObject event) async {
+      client.updates.listen((td.TdObject event) async {
         talker.info("Received TDLib event: ${event.toJson()}");
         if (event is td.UpdateAuthorizationState) {
           if (event.authorizationState
               is td.AuthorizationStateWaitTdlibParameters) {
-            await _client.send(
+            await client.send(
               td.SetTdlibParameters(
                 useTestDc: false,
-                apiId: 11,
-                apiHash: "hide it",
+                apiId: 1,
+                apiHash: "hide",
                 systemLanguageCode: "en",
                 deviceModel: "Android",
                 applicationVersion: "1.0",
