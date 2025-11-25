@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:telegram_selfmade_flutter_client/core/services/tdlib_service.dart';
 import 'package:telegram_selfmade_flutter_client/features/auth/presentation/pages/auth_phone.dart';
 
 import 'core/providers/talker_provider.dart';
@@ -33,21 +32,27 @@ class _TelegramClientState extends ConsumerState<TelegramClient> {
   void initState() {
     super.initState();
 
-    final tdClient = ref.read(tdClientProvider);
     final _talker = ref.read(talkerProvider);
+    final tdService = ref.watch(tdServiceProvider);
 
-    TdlibService(tdClient, _talker).initialize().then((_) {
-      setState(() {
-        _isInitialized = true;
-      });
-    });
+    tdService.when(
+      data: (value) {
+        setState(() {
+          _isInitialized = value.isInitialized;
+        });
+      },
+      error: (err, stackTrace) {
+        _talker.error("TDLib Service initialization main.dart error", err);
+      },
+      loading: () {},
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: _isInitialized
-          ? const AuthPhoneScreen()
+          ? AuthPhoneScreen()
           : const CircularProgressIndicator(),
     );
   }

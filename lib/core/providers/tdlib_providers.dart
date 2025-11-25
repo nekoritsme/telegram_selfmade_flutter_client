@@ -1,12 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tdlib/td_client.dart';
+import 'package:telegram_selfmade_flutter_client/core/providers/talker_provider.dart';
+import 'package:telegram_selfmade_flutter_client/core/services/tdlib_service.dart';
 
-final tdClientProvider = Provider<Client>((ref) {
-  final client = Client.create();
+final tdServiceProvider = FutureProvider<TdlibService>((ref) async {
+  Client tdClient = Client.create();
+  tdClient.initialize();
 
-  ref.onDispose(() {
-    client.destroy();
-  });
+  final tdlibService = TdlibService(tdClient, ref.read(talkerProvider));
+  await tdlibService.initialize();
 
-  return client;
+  return tdlibService;
 });

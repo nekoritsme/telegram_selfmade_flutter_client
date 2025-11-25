@@ -10,6 +10,9 @@ class TdlibService {
   final Talker talker;
   bool isInitialized = false;
 
+  // states
+  td.AuthorizationState? authorizationState;
+
   Future<void> initialize() async {
     if (isInitialized) {
       talker.warning("TDLib client is already initialized.");
@@ -23,25 +26,31 @@ class TdlibService {
       final dbPath = '${appDir.path}/tdlib';
 
       _client.updates.listen((td.TdObject event) async {
-        if (event is td.AuthorizationStateWaitTdlibParameters) {
-          await _client.send(
-            td.SetTdlibParameters(
-              useTestDc: true,
-              apiId: "hide it",
-              apiHash: "hide it",
-              systemLanguageCode: "en",
-              deviceModel: "Android",
-              applicationVersion: "1.0",
-              databaseDirectory: dbPath,
-              filesDirectory: '$dbPath/files',
-              useFileDatabase: true,
-              useChatInfoDatabase: true,
-              useMessageDatabase: true,
-              useSecretChats: false,
-              databaseEncryptionKey: '',
-              systemVersion: '',
-            ),
-          );
+        talker.info("Received TDLib event: ${event.toJson()}");
+        if (event is td.UpdateAuthorizationState) {
+          if (event.authorizationState
+              is td.AuthorizationStateWaitTdlibParameters) {
+            await _client.send(
+              td.SetTdlibParameters(
+                useTestDc: false,
+                apiId: 11,
+                apiHash: "hide it",
+                systemLanguageCode: "en",
+                deviceModel: "Android",
+                applicationVersion: "1.0",
+                databaseDirectory: dbPath,
+                filesDirectory: '$dbPath/files',
+                useFileDatabase: true,
+                useChatInfoDatabase: true,
+                useMessageDatabase: true,
+                useSecretChats: false,
+                databaseEncryptionKey: '',
+                systemVersion: '',
+              ),
+            );
+          }
+          authorizationState = event.authorizationState;
+          talker.info("Updated authorization state: $authorizationState");
         }
       });
     } catch (err) {
