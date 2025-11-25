@@ -5,7 +5,6 @@ import 'package:telegram_selfmade_flutter_client/core/services/tdlib_service.dar
 
 final tdServiceProvider = FutureProvider<TdlibService>((ref) async {
   Client tdClient = Client.create();
-  tdClient.initialize();
 
   final tdlibService = TdlibService(tdClient, ref.read(talkerProvider));
   await tdlibService.initialize();

@@ -33,19 +33,21 @@ class _TelegramClientState extends ConsumerState<TelegramClient> {
     super.initState();
 
     final _talker = ref.read(talkerProvider);
-    final tdService = ref.watch(tdServiceProvider);
+    final tdServiceFuture = ref.read(tdServiceProvider.future);
 
-    tdService.when(
-      data: (value) {
-        setState(() {
-          _isInitialized = value.isInitialized;
+    tdServiceFuture
+        .then((value) {
+          setState(() {
+            _isInitialized = value.isInitialized;
+          });
+        })
+        .catchError((err, stackTrace) {
+          _talker.error(
+            "TDLib Service initialization main.dart error",
+            err,
+            stackTrace,
+          );
         });
-      },
-      error: (err, stackTrace) {
-        _talker.error("TDLib Service initialization main.dart error", err);
-      },
-      loading: () {},
-    );
   }
 
   @override
