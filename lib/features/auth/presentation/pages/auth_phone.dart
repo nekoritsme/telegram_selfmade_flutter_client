@@ -21,23 +21,6 @@ class AuthPhoneScreen extends ConsumerStatefulWidget {
 class _AuthPhoneScreenState extends ConsumerState<AuthPhoneScreen> {
   final TextEditingController _phoneController = TextEditingController();
 
-  void initState() {
-    super.initState();
-
-    final tdServiceFuture = ref.read(tdServiceProvider.future);
-
-    tdServiceFuture.then((tdService) {
-      if (!mounted) return;
-
-      if (tdService.authorizationState is td.AuthorizationStateReady) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (ctx) => ClientScreen()),
-        );
-      }
-    });
-  }
-
   void _sendPhoneNumber(
     BuildContext context,
     TdlibService tdService,
@@ -66,20 +49,30 @@ class _AuthPhoneScreenState extends ConsumerState<AuthPhoneScreen> {
     }
   }
 
+  @override
   void dispose() {
+    super.dispose();
     _phoneController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final tdService = ref.watch(tdServiceProvider);
+
+    if (tdService.value!.authorizationState is td.AuthorizationStateReady) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (ctx) => ClientScreen()),
+        );
+      });
+    }
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _sendPhoneNumber(
-            context,
-            ref.watch(tdServiceProvider).value!,
-            ref.read(talkerProvider),
-          );
+          _sendPhoneNumber(context, tdService.value!, ref.read(talkerProvider));
         },
         child: const Icon(
           Icons.arrow_forward,
